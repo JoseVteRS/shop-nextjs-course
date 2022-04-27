@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { db } from "../../../database";
+import { IProduct } from "../../../interfaces";
+import { Product } from "../../../models";
 
-type Data = {
-    message: string;
-};
+type Data = { message: string } | IProduct[];
 
 export default function handler(
     req: NextApiRequest,
@@ -18,7 +19,10 @@ export default function handler(
 
     res.status(200).json({ message: "Example" });
 }
-const searchProducts = (req: NextApiRequest, res: NextApiResponse<Data>) => {
+const searchProducts = async (
+    req: NextApiRequest,
+    res: NextApiResponse<Data>
+) => {
     let { q = "" } = req.query;
 
     if (q.length === 0)
@@ -28,5 +32,13 @@ const searchProducts = (req: NextApiRequest, res: NextApiResponse<Data>) => {
 
     q = q.toString().toLowerCase();
 
-    return res.status(200).json({ message: q.toString() });
+    await db.connect();
+
+    const products = await Product.find({ $text: { $search: q } })
+        .select("title slug images price inStock -_id")
+        .lean();
+
+    await db.disconnect();
+
+    return res.status(200).json(products);
 };
