@@ -3,25 +3,30 @@ import { FC } from "react";
 import { ISize } from "../../interfaces";
 
 interface SizeSelectorProps {
-  selectedSize?: ISize;
-  sizes: ISize[];
+    selectedSize?: ISize;
+    sizes: ISize[];
+
+    //Methods
+    onSelectedSize: (size: ISize) => void;
 }
 
 export const SizeSelector: FC<SizeSelectorProps> = ({
-  selectedSize,
-  sizes,
+    selectedSize,
+    sizes,
+    onSelectedSize,
 }) => {
-  return (
-    <Box>
-      {sizes.map((size) => (
-        <Button
-          key={size}
-          size="small"
-          color={selectedSize === size ? "info" : "primary"}
-        >
-          {size}
-        </Button>
-      ))}
-    </Box>
-  );
+    return (
+        <Box>
+            {sizes.map((size) => (
+                <Button
+                    key={size}
+                    size="small"
+                    color={selectedSize === size ? "primary" : "info"}
+                    onClick={() => onSelectedSize(size)}
+                >
+                    {size}
+                </Button>
+            ))}
+        </Box>
+    );
 };

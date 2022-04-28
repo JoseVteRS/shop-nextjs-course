@@ -1,18 +1,35 @@
 import { Box, Button, Chip, Grid, Typography } from "@mui/material";
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
+import { useState } from "react";
 import { ShopLayout } from "../../components/layout";
 import { ProductSlideshow, SizeSelector } from "../../components/products";
 import { ItemCounter } from "../../components/ui";
 import { dbProducts } from "../../database";
-import { IProduct } from "../../interfaces";
+import { IProduct, ISize } from "../../interfaces";
+import { ICartProduct } from "../../interfaces/cart";
 
 interface Props {
     product: IProduct;
 }
 
 const ProductPage: NextPage<Props> = ({ product }) => {
-    // const router = useRouter();
-    // const { products: product, isLoading } = useProducts( `/product/${router.query.slug}` );
+    const [tempCartProduct, setTempCartProduct] = useState<ICartProduct>({
+        _id: product._id,
+        image: product.images[0],
+        price: product.price,
+        slug: product.slug,
+        size: undefined,
+        title: product.title,
+        gender: product.gender,
+        quantity: 1,
+    });
+
+    const selectedSize = (size: ISize) => {
+        setTempCartProduct((currentProduct) => ({
+            ...currentProduct,
+            size,
+        }));
+    };
 
     return (
         <ShopLayout title={product.title} pageDescription={product.description}>
@@ -33,23 +50,29 @@ const ProductPage: NextPage<Props> = ({ product }) => {
                             <Typography variant="subtitle2">
                                 Cantidad
                             </Typography>
-                            {/* Item Counter */}
+
                             <ItemCounter />
                             <SizeSelector
-                                selectedSize={product.sizes[2]}
                                 sizes={product.sizes}
+                                selectedSize={tempCartProduct.size}
+                                onSelectedSize={selectedSize}
                             />
                         </Box>
 
                         {/* Add to cart */}
-                        <Button color="secondary" className="circular-btn">
-                            Añadir al carrito
-                        </Button>
-                        <Chip
-                            label="No hay disponibles"
-                            color="error"
-                            variant="outlined"
-                        />
+                        {product.inStock > 0 ? (
+                            <Button color="secondary" className="circular-btn">
+                                {tempCartProduct.size
+                                    ? "Añadir al carrito"
+                                    : "Selecciona una talla"}
+                            </Button>
+                        ) : (
+                            <Chip
+                                label="No hay disponibles"
+                                color="error"
+                                variant="outlined"
+                            />
+                        )}
 
                         {/* Description */}
                         <Box sx={{ mt: 3 }}>
